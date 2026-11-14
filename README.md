@@ -74,6 +74,24 @@ band is removed entirely, per the owner's call: its space goes to the
 photographs and the type. Story texts are unchanged from v2; hedged
 wording stays throughout.
 
+**Entry #3 v4 rationale (high-contrast "night edition").** Reviewing v3,
+the owner found the cream page not striking enough and directed a
+high-contrast palette — the competition's rules leave colour entirely
+free (the gate checks only format and size; the judge's craft criterion
+asks for one clear composition, legible at ~300 px, no garbled text).
+V4 therefore changes nothing but the colours: v3's structure, story
+texts and type sizes are carried over byte for byte in the layout, and
+the page is re-inked as a night edition. The ground is a near-black ink
+(#101418); headlines are a warm off-white (#F7F3EA); summaries are a
+light grey (#C7CBD4) that stays clearly readable on the black; the
+accent red goes vivid (#E5322D) on the label chips, the story numbers
+and the masthead's lower rule, with a single amber touch (#F2B134) on
+the masthead subline. Panels sit one step above the page (#1A2027)
+behind a #3A4350 border so the six photographs separate cleanly and
+pop. White on black is the strongest thumbnail combination the page can
+offer: at 300 px the masthead, the hero headline, the panel headlines
+and the bullet headlines all still read.
+
 **How it is made.** The page is composed programmatically with PIL
 (`compose.py`) — every letter is rendered by code from DejaVu Serif/Sans.
 The only non-code elements are the six photographs (generated images,
