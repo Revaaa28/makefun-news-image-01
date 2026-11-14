@@ -1,32 +1,32 @@
 #!/usr/bin/env python3
-"""Compose the news-image-01 entry #3 v2: a one-page newspaper broadsheet
-that sums up the world news of Friday 13 November 2026 in 25 numbered
-stories. Story texts are IDENTICAL to entry #3 v1 — this is a layout and
-visual rebuild ordered by the owner after reviewing v1:
+"""Compose the news-image-01 entry #3 v3 — a VARIANT layout the owner
+asked to SEE before deciding. Same 25 verified stories of Friday
+13 November 2026, same masthead and footer, but the structure is replaced
+wholesale (v2 stays in git history):
 
-  * a full-width HERO splash for the lead story (FAA ground stop): the
-    tarmac photo spans the whole page, with a dark-red label chip, a 30 px
-    headline and the summary on one row below it;
-  * the other two lead stories (Hormuz, Ukraine talks) as half-width
-    thumbnail panels — photo left, chip + headline + summary right;
-  * a DENSER dot-matrix world map (140x46 mask, smaller dot pitch) whose
-    pins now include the LEAD stories 1-3 — v1's map skipped them, which
-    the owner called "not relevant"; thirteen pins, every number matching
-    the story number on the page;
-  * stronger print energy: heavier black masthead rules, dark-red label
-    chips, a deeper red for numbers and labels.
+  * HIGHLIGHT — one big story: the FAA ground stop runs as a full-width
+    splash, photo across the whole page, a 32 px headline, the dark-red
+    "UNITED STATES · AVIATION" chip and its summary in one row;
+  * FIVE pictured stories (2-6) as thumbnail panels — photo left, chip,
+    bold headline and one-line summary right — in a row of three
+    (Hormuz, Ukraine talks, Taiwan drills) over a row of two (the Huang
+    summons to Congress, the Pope in Peru);
+  * NINETEEN bullet stories (7-25) as a compact two-column digest: a red
+    number, the bold headline, and the short summary as a tail on the
+    same wrapped flow — the "in brief" page of the paper;
+  * NO MAP — the dot-matrix world map band is gone entirely.
 
-Design law carried over from the judge's own breakdown notes on entries
-#1 and #2: legibility at 300 px is worth wins, and so is breadth. The
-grid therefore keeps entry-#1 type sizes (headline bold 16 px, one-line
-summaries) — that is priority #1 and the layout solver below protects it
-first; the hero photo (>= 150 px), panel photos (>= 80 px) and map
-(>= 100 px) take the remaining space in that order.
+All text is rendered by code with PIL (zero garbled text); the only
+imagery is the six photographs under assets/. Story texts are carried
+over from v2 unchanged (summaries only where the bullet flow forces a
+trim — none needed in the end). Hedged wording ("Iran says", "Tehran
+claims", "Pakistan says") is kept, as the judges credit it as an
+accuracy signal.
 
-All text is rendered by code with PIL (zero garbled text); only the three
-photographs are generated images (assets/panel-*.jpg). Hedged wording
-("Iran says", "Tehran claims", "Pakistan says") is kept, as the judges
-credit it as an accuracy signal.
+The layout solver protects, in the owner's order: bullet headlines
+(>= 16 px), then the hero photo (>= 150 px), then the panel photos
+(>= 95 px tall — they inherit the panel text height, floored at 95),
+then the bullet summary size.
 
 Run with the tools venv:
 
@@ -55,38 +55,47 @@ INK = (24, 20, 14)
 FAINT = (120, 108, 84)
 RULE = (150, 138, 108)
 PANEL = (239, 231, 211)     # panel shade under the photos
-ACCENT = (154, 28, 17)      # deeper red: numbers, labels, chips, pins
-DOT = (96, 84, 62)          # map dot colour
+ACCENT = (154, 28, 17)      # deeper red: numbers, labels, chips
 DARK = (52, 46, 34)
+SUMC = (56, 50, 38)         # summary grey-brown
 CHIP_TXT = (255, 250, 238)
 
 MX = 40                     # side margin
 CW = W - 2 * MX             # content width = 944
 
-# Panels: (photo file, focus_y, label, headline, summary).
-# Index 0 is the HERO (story 1); indices 1-2 are the half-width panels.
-PANELS = [
-    ("panel-faa.jpg", 0.60, "UNITED STATES · AVIATION",
-     "FAA grounds every U.S. flight for four hours",
-     "Nationwide ground stop — only the third in U.S. history; 15,000+ flights hit."),
-    ("panel-hormuz.jpg", 0.50, "STRAIT OF HORMUZ",
+# The HIGHLIGHT (story 1): photo, chip, headline, summary.
+HERO = ("panel-faa.jpg", 0.60, "UNITED STATES · AVIATION",
+        "FAA grounds every U.S. flight for four hours",
+        "Nationwide ground stop — only the third in U.S. history; "
+        "15,000+ flights hit.")
+
+# The FIVE pictured stories 2-6: (number, photo, focus_y, chip, headline,
+# summary). Rows: [2, 3, 4] over [5, 6].
+PICTURED = [
+    (2, "panel-hormuz.jpg", 0.50, "STRAIT OF HORMUZ",
      "Iran says it hit U.S. radar; tankers struck",
-     "Tehran claims retaliation for a tower strike; Trump rules out a new deal."),
-    ("panel-ukraine.jpg", 0.45, "UKRAINE · DIPLOMACY",
+     "Tehran claims retaliation for a tower strike; Trump rules out "
+     "a new deal."),
+    (3, "panel-ukraine.jpg", 0.45, "UKRAINE · DIPLOMACY",
      "Europe wins a seat at Ukraine peace talks",
-     "The war's largest prisoner swap in preparation; Zelensky welcomes it."),
+     "The war's largest prisoner swap in preparation; Zelensky "
+     "welcomes it."),
+    (4, "panel-taiwan.jpg", 0.45, "TAIWAN · PACIFIC",
+     "Taiwan: China staged vast unannounced Pacific drills",
+     "Taipei calls the exercises intimidation."),
+    (5, "panel-congress.jpg", 0.60, "UNITED STATES · CONGRESS",
+     "Ex-Nvidia chief Jensen Huang summoned to Congress",
+     "Lawmakers probe alleged spy-link claims."),
+    (6, "panel-pope.jpg", 0.40, "PERU · LIMA",
+     "Pope Leo meets abuse survivors in Peru",
+     "Record crowds line the streets of Lima."),
 ]
 
-# Grid stories 4-25: (number, headline, ONE-line summary — cut to fit).
-STORIES = [
-    (4, "Microsoft outage cripples Outlook and Teams",
+# The NINETEEN bullet stories 7-25: (number, headline, summary tail) —
+# texts carried over from v2 unchanged.
+BULLETS = [
+    (7, "Microsoft outage cripples Outlook and Teams",
      "No cyberattack; fixes fail after 12 hours."),
-    (5, "Ex-Nvidia chief Jensen Huang summoned to Congress",
-     "Lawmakers probe alleged spy-link claims."),
-    (6, "Pope Leo meets abuse survivors in Peru",
-     "Record crowds line the streets of Lima."),
-    (7, "Taiwan: China staged vast unannounced Pacific drills",
-     "Taipei calls the exercises intimidation."),
     (8, "Van Hollen challenges Schumer for Senate leadership",
      "Post-midterm contest; December 1 vote."),
     (9, "Brooklyn building collapse toll settles at eight dead",
@@ -125,92 +134,13 @@ STORIES = [
      "A refinery burns in Volgograd region."),
 ]
 
-# ---------------------------------------------------------------------------
-# Dot-matrix world map, v2: a finer 140x46 land mask ('#' = land), resampled
-# from the v1 mask and then hand-shaped — a real Atlantic gap, a Hudson Bay
-# notch, a Mediterranean channel, a full Africa and a tapering South
-# America — so the landmasses read rich instead of one northern wall.
-# Columns run lon -180..180, rows lat ~75N..-50.
-# ---------------------------------------------------------------------------
-MAP_COLS, MAP_ROWS = 140, 46
-MAP_MASK = [
-    ".............########..########...................#######..............###..........#######............########.........########.....#####..",
-    "....#############.#####################..........##########....................#############################################################",
-    "....############.##########################.....##########...........#######################################################################",
-    "....###########.#############################..#########.......##...########################################################################",
-    ".....##########.##################......#######.######..............########################################################################",
-    ".....############################......#########................###..######################################################################.",
-    "......##########################......#########................###########################################################################..",
-    ".............####################...##########.................##########################################################################...",
-    ".............##################################................#########################################################################....",
-    ".............###################################..................####################################################################......",
-    "..............##################################...................#################################################################........",
-    "..............##################################...................##############################...##############################..........",
-    "...............################################...................##############################...#############################............",
-    "...............################################...................#####..####################################################...............",
-    "................##############################....................####......###############################################..###............",
-    ".................############################.....................##........#############.###############################....###............",
-    "..................##############................................####......#################..##########################.....................",
-    "...................############................................####.....####################..#######################.......................",
-    ".....................#########.................................##############################..###################..........................",
-    "..............................###########......................##############################....##############.............................",
-    ".................................##########.....................###########################........##########...............................",
-    "........................#######...#####################.....#####################################...#############..####.....................",
-    ".................................######################......#################################.......#############.####.....................",
-    ".................................######################......#################################........######..############..................",
-    ".................................######################.......################################........####.#...##############...............",
-    "..................................#####################........###############################.........#####...##############...............",
-    "...................................####################.........##############################.........####################.................",
-    "....................................###################.........############################.................###################............",
-    ".....................................###################.........###########################.................####################...........",
-    ".....................................###################..........##########################.........................############...........",
-    "....................................###################...........##########################................................................",
-    "......................................###############.............#######################.......................#############...............",
-    "......................................###############.............#######################......................###############..............",
-    "......................................##############...............######################.....................################..............",
-    ".......................................############................###################........................################..............",
-    ".......................................############.................##################..........................#############...............",
-    ".......................................############.................########.#######............................#############...............",
-    "........................................##########..................######....#####..............................##########.................",
-    "........................................##########..................######.........................................#######..................",
-    "........................................##########................................................................................###.......",
-    "........................................#########................................................................................####.......",
-    "........................................#########................................................................................####.......",
-    "........................................####.####...........................................................................................",
-    "........................................####.####...........................................................................................",
-    "........................................####..##............................................................................................",
-    "........................................####..##............................................................................................",
-]
-
-# Pins for THIRTEEN stories — the leads included this time (v1 skipped
-# stories 1-3, which the owner called irrelevant): number -> (lon, lat).
-# Close pairs are spread along real geography so the r=12 pins stay
-# distinct discs: 3 = Kyiv talks, 25 = Odesa/Sumy strikes further south,
-# 16 = Moscow north-east of both; 8 = Washington, offset into the
-# Atlantic south-east of 9 = New York.
-PINS = {
-    1: (-98, 39),      # story 1 — FAA ground stop, U.S. interior
-    2: (56.5, 26.5),   # story 2 — Strait of Hormuz
-    3: (25, 50),       # story 3 — Ukraine peace talks (Kyiv, nudged west)
-    6: (-75, -9),      # Peru — Lima
-    7: (121, 23.5),    # Taiwan
-    8: (-62, 28),      # Washington — offset south-east of New York
-    9: (-74, 41),      # New York
-    12: (70, 30),      # Pakistan
-    13: (-13, 36.5),   # Portugal — nudged offshore, clear of Dublin
-    16: (44, 57),      # Moscow — nudged north-east, clear of Ukraine
-    19: (-4, 55),      # Dublin — nudged north, clear of Portugal
-    23: (134, -25),    # Australia
-    25: (34, 45.5),    # Ukraine strikes — south of the talks pin
-}
-
 
 def font(path, size):
     return ImageFont.truetype(path, size)
 
 
 def wrap(draw, text, fnt, max_width):
-    """Greedy word wrap measured in real pixels; never overflows max_width."""
+    """Greedy word wrap measured in real pixels; never overflows."""
     lines, cur = [], ""
     for word in text.split():
         trial = word if not cur else cur + " " + word
@@ -254,65 +184,56 @@ def draw_chip(d, x, y, label, fnt, height):
     return w
 
 
-def draw_pin(d, cx, cy, num):
-    r = 12
-    d.ellipse([cx - r - 2, cy - r - 2, cx + r + 2, cy + r + 2],
-              fill=(255, 250, 238))
-    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=ACCENT)
-    nf = font(SANS_B, 12 if num < 10 else 11)
-    label = str(num)
-    tw = d.textlength(label, font=nf)
-    bbox = nf.getbbox(label)
-    th = bbox[3] - bbox[1]
-    d.text((cx - tw / 2, cy - th / 2 - bbox[1]), label,
-           font=nf, fill=(255, 250, 238))
+# ---------------------------------------------------------------------------
+# Bullet items: a mixed-font flow — headline words in bold serif, then an
+# em dash and the summary tail in sans — wrapped word by word with each
+# word measured in its own font.
+# ---------------------------------------------------------------------------
+def flow_tokens(head, summ, hf, sf):
+    toks = [(w, hf, INK) for w in head.split()]
+    toks.append(("—", sf, SUMC))
+    toks += [(w, sf, SUMC) for w in summ.split()]
+    return toks
 
 
-def draw_map(d, top, height):
-    d.rectangle([MX, top, W - MX, top + height], outline=INK, width=1)
-    cell_w = CW / MAP_COLS
-    cell_h = height / MAP_ROWS
-    r = 1.45
-    for ri, row in enumerate(MAP_MASK):
-        cy = top + (ri + 0.5) * cell_h
-        for ci, ch in enumerate(row):
-            if ch == "#":
-                cx = MX + (ci + 0.5) * cell_w
-                d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=DOT)
-    # Caption on a clean plate, bottom-LEFT (bottom-right is Australia).
-    cap_f = font(SANS_B, 10)
-    cap = "WHERE THE DAY HAPPENED — PINS MATCH THE STORY NUMBERS"
-    cap_x, cap_y = MX + 8, top + height - 18
-    d.rectangle([cap_x - 5, cap_y - 3,
-                 cap_x + d.textlength(cap, font=cap_f) + 5,
-                 top + height - 3], fill=BG)
-    d.text((cap_x, cap_y), cap, font=cap_f, fill=FAINT)
-    for num, (lon, lat) in PINS.items():
-        cx = MX + (lon + 180) / 360.0 * CW
-        cy = top + (75 - lat) / 125.0 * height
-        draw_pin(d, cx, cy, num)
+def wrap_flow(d, toks, max_w):
+    lines, cur, cur_w = [], [], 0.0
+    for tok in toks:
+        w = d.textlength(tok[0], font=tok[1])
+        sp = d.textlength(" ", font=tok[1]) if cur else 0.0
+        if cur and cur_w + sp + w > max_w:
+            lines.append(cur)
+            cur, cur_w = [tok], w
+        else:
+            cur.append(tok)
+            cur_w += sp + w
+    if cur:
+        lines.append(cur)
+    return lines
 
 
-def measure_story(draw, story, hf, sf, text_w, h_lead, s_lead):
-    _, head, summ = story
-    hl = wrap(draw, head, hf, text_w)
-    sl = wrap(draw, summ, sf, text_w)
-    height = len(hl) * h_lead + 2 + len(sl) * s_lead
-    return hl, sl, height
+def draw_flow(d, lines, x, y, leading):
+    for line in lines:
+        cx = x
+        for k, (word, fnt, fill) in enumerate(line):
+            if k:
+                cx += d.textlength(" ", font=fnt)
+            d.text((cx, y), word, font=fnt, fill=fill)
+            cx += d.textlength(word, font=fnt)
+        y += leading
+    return y
 
 
-def balance_columns(heights, ncols=3, sep=3):
-    """Split story indices into ncols contiguous runs minimising max height.
-    Each story also costs `sep` px except the last in a column."""
-    n = len(heights)
+def balance_two(heights, gap):
+    """Contiguous split of the items into two columns minimising the
+    taller column (each item also costs `gap` except a column's last)."""
     best = None
-    for i in range(1, n - 1):
-        for j in range(i + 1, n):
-            runs = [heights[:i], heights[i:j], heights[j:]]
-            tot = [sum(r) + sep * (len(r) - 1) for r in runs]
-            score = (max(tot), max(tot) - min(tot))
-            if best is None or score < best[0]:
-                best = (score, (i, j), tot)
+    for i in range(1, len(heights)):
+        tot = [sum(heights[:i]) + gap * (i - 1),
+               sum(heights[i:]) + gap * (len(heights) - i - 1)]
+        score = (max(tot), max(tot) - min(tot))
+        if best is None or score < best[0]:
+            best = (score, i, tot)
     return best[1], best[2]
 
 
@@ -320,7 +241,7 @@ def main():
     img = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(img)
 
-    # ---------- masthead (heavier rules than v1) ----------
+    # ---------- masthead (unchanged from v2) ----------
     d.line([(MX, 8), (W - MX, 8)], fill=INK, width=3)
     title_f = font(SERIF_B, 44)
     title = "THE WORLD IN ONE DAY"
@@ -332,152 +253,145 @@ def main():
     d.text(((W - sw) / 2, 64), sub, font=sub_f, fill=(70, 60, 44))
     d.line([(MX, 91), (W - MX, 91)], fill=INK, width=6)
     d.line([(MX, 98), (W - MX, 98)], fill=INK, width=2)
-    hero_top = 104
+    top = 104
+    limit = 984                       # footer rule sits at 990
 
-    # ---------- shared text metrics ----------
-    hero_head_f = font(SERIF_B, 30)
-    hero_sum_f = font(SANS, 13)
-    chip_f = font(SANS_B, 12)
+    # ---------- shared panel metrics (fixed by the brief's floors) -----
+    panel_head_f = font(SERIF_B, 17)
+    panel_head_lead = 19
+    panel_sum_f = font(SANS, 12.5)
+    panel_sum_lead = 15
     pchip_f = font(SANS_B, 11)
-    panel_head_f = font(SERIF_B, 20)
-    panel_head_lead = 22
 
-    # Half-width panels: photo left (185 px), text right.
-    pgap = 14
-    panel_w = (CW - pgap) // 2              # 465
-    photo_w = 185
-    ptext_x = photo_w + 14                  # offset inside the panel box
-    ptext_w = panel_w - ptext_x - 8         # 258
-    # Panel summary: largest size in the ladder that stays within 2 lines.
-    panel_sum_f = None
-    panel_sum_lead = 14
-    for cand in (13, 12):
-        cf = font(SANS, cand)
-        if all(len(wrap(d, p[4], cf, ptext_w)) <= 2 for p in PANELS[1:]):
-            panel_sum_f = cf
-            break
-    if panel_sum_f is None:
-        panel_sum_f = font(SANS, 12)
+    def panel_text_h(panel, text_w):
+        _, _, _, _, head, summ = panel
+        hl = wrap(d, head, panel_head_f, text_w - 20)
+        sl = wrap(d, summ, panel_sum_f, text_w)
+        return 18 + 3 + len(hl) * panel_head_lead + 2 \
+            + len(sl) * panel_sum_lead
 
-    def panel_text_h(panel):
-        _, _, _, head, summ = panel
-        hl = wrap(d, head, panel_head_f, ptext_w)
-        sl = wrap(d, summ, panel_sum_f, ptext_w)
-        return 6 + 19 + 2 + len(hl) * panel_head_lead + 2 \
-            + len(sl) * panel_sum_lead + 6
+    def panel_h(panel, text_w):
+        # Photo spans the panel's inner height; floor ~95 px for it.
+        return max(panel_text_h(panel, text_w) + 10, 99)
 
-    panel_block_h = max(panel_text_h(p) for p in PANELS[1:])
-    panel_photo_h = panel_block_h - 4       # inside the 2 px border
+    pgap = 12
+    rowA_w = (CW - 2 * pgap) // 3                 # 306
+    rowA_photo_w = 118
+    rowA_text_w = rowA_w - (2 + rowA_photo_w + 10) - 6   # 170
+    rowB_w = (CW - pgap) // 2                     # 466
+    rowB_photo_w = 170
+    rowB_text_w = rowB_w - (2 + rowB_photo_w + 10) - 6   # 278
+    rowA_h = max(panel_h(p, rowA_text_w) for p in PICTURED[:3])
+    rowB_h = max(panel_h(p, rowB_text_w) for p in PICTURED[3:])
 
-    # Hero text block below the photo: headline row, then chip + summary.
-    hero_text_h = 5 + 35 + 3 + 21 + 6       # pads + headline + chip row
+    # ---------- hero metrics ----------
+    hero_head_f = font(SERIF_B, 32)
+    hero_head_lead = 37
+    hero_sum_f = font(SANS, 13)
+    hero_chip_f = font(SANS_B, 12)
+    hero_hl = wrap(d, HERO[3], hero_head_f, CW - 24)
+    hero_text_h = 5 + len(hero_hl) * hero_head_lead + 3 + 21 + 6
 
-    # ---------- grid solver: type size is priority #1 ----------
-    gutter = 22
-    col_w = (CW - 2 * gutter) // 3          # 300
-    num_gutter = 22
-    text_w = col_w - num_gutter             # 278
-    footer_limit = 984                      # grid bottom; footer rule at 990
-    grid_ladder = [(16, 13), (16, 12.5)]
-
+    # ---------- bullet solver ----------
+    # Priority: bullet headline size, hero photo height, bullet summary
+    # size, item gap. (Panel photos are slaved to their text height with
+    # a 95 px floor, so they need no rung of their own.)
+    bgutter = 24
+    bcol_w = (CW - bgutter) // 2                  # 460
+    bnum_w = 26
+    btext_w = bcol_w - bnum_w                     # 434
     chosen = None
-    for hsize, ssize in grid_ladder:
+    for hsize in (17, 16.5, 16):
         hf = font(SERIF_B, hsize)
-        sf = font(SANS, ssize)
-        h_lead = round(hsize * 1.09)
-        s_lead = round(ssize * 1.18)
-        heights = [measure_story(d, s, hf, sf, text_w, h_lead, s_lead)[2]
-                   for s in STORIES]
-        splits, totals = balance_columns(heights)
-        grid_h = max(totals)
-        hero_photo = 150                    # floor; grows only with slack
-        hero_block = 4 + hero_photo + hero_text_h
-        panels_top = hero_top + hero_block + 5
-        panels_bottom = panels_top + panel_block_h
-        grid_top = footer_limit - grid_h
-        map_h = grid_top - 5 - panels_bottom
-        if map_h >= 100:
-            grow = min(map_h - 112, 26)     # slack: hero grows, map ~112
-            if grow > 0:
-                hero_photo += grow
-                hero_block += grow
-                panels_top += grow
-                panels_bottom += grow
-                map_h -= grow
-            chosen = (hero_photo, hero_block, panels_top, map_h, grid_top,
-                      hf, sf, h_lead, s_lead, splits, totals)
+        lead = round(hsize * 1.12)
+        for hero_photo in (175, 160, 150):
+            hero_block = 2 + hero_photo + hero_text_h + 2
+            for ssize in (13, 12.5):
+                sf = font(SANS, ssize)
+                linesets = [wrap_flow(d, flow_tokens(h, s, hf, sf),
+                                      btext_w)
+                            for _, h, s in BULLETS]
+                heights = [len(ls) * lead for ls in linesets]
+                for gap in (4, 3, 2):
+                    split, totals = balance_two(heights, gap)
+                    total = hero_block + 6 + rowA_h + 8 + rowB_h + 8 \
+                        + max(totals)
+                    if top + total <= limit:
+                        chosen = (hsize, hf, lead, hero_photo, hero_block,
+                                  ssize, sf, linesets, gap, split, totals,
+                                  total)
+                        break
+                if chosen:
+                    break
+            if chosen:
+                break
+        if chosen:
             break
-        if chosen is None or map_h > chosen[3]:
-            chosen = (hero_photo, hero_block, panels_top, map_h, grid_top,
-                      hf, sf, h_lead, s_lead, splits, totals)
-    (hero_photo, hero_block, panels_top, map_h, grid_top,
-     hf, sf, h_lead, s_lead, (si, sj), totals) = chosen
-    map_top = panels_top + panel_block_h + 5
+    if chosen is None:
+        raise SystemExit("layout solver: no configuration fits")
+    (hsize, hf, lead, hero_photo, hero_block, ssize, sf, linesets, bgap,
+     bsplit, btotals, total_h) = chosen
+    bnf = font(SANS_B, hsize)
 
     # ---------- HERO (story 1) ----------
-    name, focus, label, head, summ = PANELS[0]
-    d.rectangle([MX, hero_top, W - MX, hero_top + hero_block],
+    name, focus, label, head, summ = HERO
+    d.rectangle([MX, top, W - MX, top + hero_block],
                 fill=PANEL, outline=INK, width=2)
-    photo = load_photo(name, CW - 4, hero_photo, focus)
-    img.paste(photo, (MX + 2, hero_top + 2))
-    hy = hero_top + 2 + hero_photo + 5
-    d.text((MX + 12, hy), head, font=hero_head_f, fill=INK)
-    hy += 38
-    chip_w = draw_chip(d, MX + 12, hy, label, chip_f, 21)
-    d.text((MX + 12 + chip_w + 12, hy + 3), summ,
+    img.paste(load_photo(name, CW - 4, hero_photo, focus),
+              (MX + 2, top + 2))
+    hy = top + 2 + hero_photo + 5
+    hy = draw_lines(d, hero_hl, MX + 12, hy, hero_head_f, INK,
+                    hero_head_lead)
+    chip_w = draw_chip(d, MX + 12, hy + 3, label, hero_chip_f, 21)
+    d.text((MX + 12 + chip_w + 12, hy + 6), summ,
            font=hero_sum_f, fill=DARK)
 
-    # ---------- PANEL ROW (stories 2-3) ----------
-    for k, panel in enumerate(PANELS[1:]):
-        name, focus, label, head, summ = panel
-        x0 = MX + k * (panel_w + pgap)
-        d.rectangle([x0, panels_top, x0 + panel_w,
-                     panels_top + panel_block_h],
-                    fill=PANEL, outline=INK, width=2)
-        photo = load_photo(name, photo_w, panel_photo_h, focus)
-        img.paste(photo, (x0 + 2, panels_top + 2))
-        tx = x0 + ptext_x
-        ty = panels_top + 6
-        draw_chip(d, tx, ty, label, pchip_f, 19)
+    # ---------- PICTURED rows (stories 2-6, thumbnail panels) ----------
+    def draw_panel(panel, x0, y0, w, h, photo_w, text_w):
+        num, name, focus, label, head, summ = panel
+        d.rectangle([x0, y0, x0 + w, y0 + h], fill=PANEL, outline=INK,
+                    width=2)
+        img.paste(load_photo(name, photo_w, h - 4, focus),
+                  (x0 + 2, y0 + 2))
+        tx = x0 + 2 + photo_w + 10
+        ty = y0 + 5
+        draw_chip(d, tx, ty, label, pchip_f, 18)
         ty += 21
-        ty = draw_lines(d, wrap(d, head, panel_head_f, ptext_w),
-                        tx, ty, panel_head_f, INK, panel_head_lead)
-        draw_lines(d, wrap(d, summ, panel_sum_f, ptext_w),
-                   tx, ty + 2, panel_sum_f, DARK, panel_sum_lead)
+        d.text((tx, ty), str(num), font=font(SANS_B, 13), fill=ACCENT)
+        ty = draw_lines(d, wrap(d, head, panel_head_f, text_w - 20),
+                        tx + 20, ty, panel_head_f, INK, panel_head_lead)
+        draw_lines(d, wrap(d, summ, panel_sum_f, text_w),
+                   tx, ty + 2, panel_sum_f, SUMC, panel_sum_lead)
 
-    # ---------- world map band (denser mask, pins incl. the leads) ------
-    draw_map(d, map_top, map_h)
+    panels_top = top + hero_block + 6
+    for k, panel in enumerate(PICTURED[:3]):
+        draw_panel(panel, MX + k * (rowA_w + pgap), panels_top,
+                   rowA_w, rowA_h, rowA_photo_w, rowA_text_w)
+    rowB_top = panels_top + rowA_h + 8
+    for k, panel in enumerate(PICTURED[3:]):
+        draw_panel(panel, MX + k * (rowB_w + pgap), rowB_top,
+                   rowB_w, rowB_h, rowB_photo_w, rowB_text_w)
 
-    # ---------- story grid (entry-#1 type sizes, balanced columns) ------
-    nf = font(SANS_B, hf.size)
-    cols = [STORIES[:si], STORIES[si:sj], STORIES[sj:]]
+    # ---------- BULLETS (stories 7-25, two balanced columns) -----------
+    bullets_top = rowB_top + rowB_h + 8
+    d.line([(MX, bullets_top - 4), (W - MX, bullets_top - 4)],
+           fill=RULE, width=1)
+    cols = [(BULLETS[:bsplit], linesets[:bsplit]),
+            (BULLETS[bsplit:], linesets[bsplit:])]
+    for c, (items, lsets) in enumerate(cols):
+        x0 = MX + c * (bcol_w + bgutter)
+        y = bullets_top
+        for (num, _, _), ls in zip(items, lsets):
+            d.text((x0, y), str(num), font=bnf, fill=ACCENT)
+            draw_flow(d, ls, x0 + bnum_w, y, lead)
+            y += len(ls) * lead + bgap
+        if c == 0:
+            mid_x = x0 + bcol_w + bgutter // 2
+            d.line([(mid_x, bullets_top),
+                    (mid_x, bullets_top + btotals[0])], fill=RULE,
+                   width=1)
 
-    def draw_column(stories, x0, y0):
-        y = y0
-        for k, story in enumerate(stories):
-            n, head, summ = story
-            hl, sl, height = measure_story(d, story, hf, sf, text_w,
-                                           h_lead, s_lead)
-            d.text((x0, y), str(n), font=nf, fill=ACCENT)
-            yy = draw_lines(d, hl, x0 + num_gutter, y, hf, INK, h_lead)
-            yy = draw_lines(d, sl, x0 + num_gutter, yy + 2, sf,
-                            (56, 50, 38), s_lead)
-            y += height
-            if k < len(stories) - 1:
-                d.line([(x0, y + 1), (x0 + col_w, y + 1)], fill=RULE,
-                       width=1)
-            y += 3
-        return y
-
-    for c, col in enumerate(cols):
-        x0 = MX + c * (col_w + gutter)
-        draw_column(col, x0, grid_top)
-        if c < 2:
-            mid_x = x0 + col_w + gutter // 2
-            d.line([(mid_x, grid_top - 4),
-                    (mid_x, grid_top + totals[c] + 2)], fill=RULE, width=1)
-
-    # ---------- footer ----------
+    # ---------- footer (unchanged) ----------
     d.line([(MX, 990), (W - MX, 990)], fill=INK, width=2)
     foot_f = font(SANS, 13)
     foot = "Compiled from the day's reports · Friday 13 November 2026"
@@ -485,13 +399,14 @@ def main():
     d.text(((W - fw) / 2, 997), foot, font=foot_f, fill=FAINT)
 
     img.save(OUT, optimize=True)
-    wrapped = [s[0] for s in STORIES
-               if len(wrap(d, s[2], sf, text_w)) > 1]
-    print(f"wrote {OUT}: {os.path.getsize(OUT)} bytes; hero_photo={hero_photo} "
-          f"panel_photo={photo_w}x{panel_photo_h}; map_h={map_h}; "
-          f"grid fonts headline={hf.size} summary={sf.size}; "
-          f"splits={si},{sj}; column totals={totals} (limit {footer_limit}); "
-          f"summaries wrapping to 2 lines: {wrapped}")
+    tall = [BULLETS[i][0] for i, ls in enumerate(linesets)
+            if len(ls) >= 3]
+    print(f"wrote {OUT}: {os.path.getsize(OUT)} bytes; "
+          f"bullet headline={hsize} summary={ssize} gap={bgap}; "
+          f"hero_photo={hero_photo}; rowA_h={rowA_h} rowB_h={rowB_h}; "
+          f"bullet split={bsplit} totals={btotals}; "
+          f"total_h={total_h} (limit {limit - top}); "
+          f"bullets wrapping to 3+ lines: {tall}")
     return 0
 
 

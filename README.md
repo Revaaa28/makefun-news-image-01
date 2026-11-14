@@ -1,17 +1,18 @@
 # The World in One Day — news-image-01
 
-**Concept.** One image that sums up the whole of Friday 13 November 2026: a
-classic newspaper broadsheet front page, "THE WORLD IN ONE DAY", carrying 25
-numbered stories under a single masthead. The day's biggest story — the FAA
-ground stop — runs as a full-width hero splash: a photograph of the parked
-fleet, a dark-red dateline chip, a 30 px headline and its summary in one
-row. The next two leads (Hormuz, the Ukraine talks) run as half-width
-thumbnail panels, photograph beside chip, headline and summary. Below them
-a dense dot-matrix world map carries big red numbered pins for thirteen
-stories — the three leads included — and the remaining 22 stories run in a
-three-column numbered grid, each with a bold headline and a one-line
-summary, so a viewer who missed the day can tell what happened from the
-image alone.
+**Concept.** One image that sums up the whole of Friday 13 November 2026:
+a classic newspaper broadsheet front page, "THE WORLD IN ONE DAY",
+carrying 25 stories under a single masthead in a 1 + 5 + 19 structure.
+One big story runs as the HIGHLIGHT — the FAA ground stop as a full-width
+splash: photograph of the parked fleet, a 32 px headline, a dark-red
+dateline chip and its summary. Five more stories run pictured, each a
+photograph with a bold label, headline and one-line summary (Hormuz, the
+Ukraine talks and China's Pacific drills in a row of three; the Huang
+summons and the Pope in Peru in a row of two). The remaining nineteen
+stories run as a compact two-column bullet digest — a red number, a bold
+headline and a short summary tail — so a viewer who missed the day can
+still tell what happened from the image alone. There is deliberately no
+map in this variant.
 
 **Entry #2 rationale.** Entry #1 (14 stories, text-only) measured around
 rank 800 of 2,000+, while the board's top 20 all carried 19–30 stories and
@@ -55,28 +56,48 @@ type first (16 px headlines, 13 px one-line summaries), then the hero
 photo (150 px), the panel photos (103 px) and the map (110 px) — all four
 floors hold at once.
 
+**Entry #3 v3 rationale (owner's variant).** After reviewing v2, the
+owner asked to see a different structure before deciding: one big
+highlight, a handful of pictured stories, the rest as bullet points —
+and no map. V3 is that variant, built to be looked at, not yet chosen.
+The FAA ground stop stays the splash, now with a 32 px headline. The
+pictured bench grows from two to five — Taiwan's warning over China's
+Pacific drills, the ex-Nvidia chief's summons to Congress and the Pope's
+Peru visit join Hormuz and the Ukraine talks, each with its own
+photograph — because in the judge's notes a photo with a bold label is
+what reads instantly at thumbnail size. The other nineteen stories give
+up their grid cells for a two-column bullet digest (red number, bold
+headline, summary as a tail on the same flow), which keeps every headline
+at digest size or better — the solver landed on 16.5 px headlines with
+13 px summaries — instead of v2's smaller three-column grid. The map
+band is removed entirely, per the owner's call: its space goes to the
+photographs and the type. Story texts are unchanged from v2; hedged
+wording stays throughout.
+
 **How it is made.** The page is composed programmatically with PIL
-(`compose.py`) — every letter is rendered by code from DejaVu Serif/Sans,
-and the world map is drawn by the same script as a dot matrix over a
-hand-built continent mask, with big red pins at the datelines of the
-three leads and ten grid stories. The only non-code elements are the
-three photographs (generated images, committed under `assets/` and
-composited by the same script). The masthead, the hero headline, both
-panel headlines and the grid headlines still read clearly at 300 px.
-`main.py` installs the committed `entry.png` into the output directory.
+(`compose.py`) — every letter is rendered by code from DejaVu Serif/Sans.
+The only non-code elements are the six photographs (generated images,
+committed under `assets/` and composited by the same script). A layout
+solver protects the bullet headlines first (16.5 px as built), then the
+hero photograph (160 px), then the panel photographs (99–135 px), then
+the summary size. The masthead, the hero headline, all five panel
+headlines and the bullet headlines still read at 300 px. `main.py`
+installs the committed `entry.png` into the output directory.
 
 **Story selection.** The 25 stories were chosen for breadth across regions
 and fields, not just volume:
 
-- *Top panel 1:* the FAA's nationwide ground stop — every U.S. departure halted
+- *Highlight:* the FAA's nationwide ground stop — every U.S. departure halted
   for some four hours after an air-traffic communications outage, only the
   third such stop in U.S. history, with 15,000+ flights hit.
-- *Top panel 2:* the Iran–U.S. escalation in the Strait of Hormuz — Tehran's
+- *Pictured:* the Iran–U.S. escalation in the Strait of Hormuz — Tehran's
   claimed strike on a U.S. radar in Bahrain and explosions hitting four
-  tankers in the strait.
-- *Top panel 3:* Ukraine peace talks widen — Europe wins a seat at the
-  table, the war's largest prisoner swap is in preparation, and Ukrainian
-  drones strike Odesa and Sumy (story 25).
+  tankers in the strait; Ukraine peace talks widening, with Europe winning
+  a seat at the table and the war's largest prisoner swap in preparation;
+  China's vast unannounced Pacific drills, as warned by Taiwan; the
+  ex-Nvidia chief's summons to Congress; and the Pope's meeting with abuse
+  survivors in Peru.
+- *Also on the page:* Ukrainian drones strike Odesa and Sumy (story 25).
 - *War & diplomacy:* Ukraine peace talks and the prisoner swap, Europe's
   seat at the table, Taiwan's warning over Chinese Pacific drills,
   Pakistan's border raids, the Moscow car bomb, and the jailing of rights
