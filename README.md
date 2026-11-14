@@ -2,13 +2,16 @@
 
 **Concept.** One image that sums up the whole of Friday 13 November 2026: a
 classic newspaper broadsheet front page, "THE WORLD IN ONE DAY", carrying 25
-numbered stories under a single masthead. The day's three biggest stories
-run across the top as illustrated panels — a photograph, a bold dateline
-label and a headline each — so they read instantly at any size. Below them a
-dot-matrix world map carries big red numbered pins for the grid stories'
-datelines, and the remaining 22 stories run in a three-column numbered
-grid, each with a bold headline and a one-line summary, so a viewer who
-missed the day can tell what happened from the image alone.
+numbered stories under a single masthead. The day's biggest story — the FAA
+ground stop — runs as a full-width hero splash: a photograph of the parked
+fleet, a dark-red dateline chip, a 30 px headline and its summary in one
+row. The next two leads (Hormuz, the Ukraine talks) run as half-width
+thumbnail panels, photograph beside chip, headline and summary. Below them
+a dense dot-matrix world map carries big red numbered pins for thirteen
+stories — the three leads included — and the remaining 22 stories run in a
+three-column numbered grid, each with a bold headline and a one-line
+summary, so a viewer who missed the day can tell what happened from the
+image alone.
 
 **Entry #2 rationale.** Entry #1 (14 stories, text-only) measured around
 rank 800 of 2,000+, while the board's top 20 all carried 19–30 stories and
@@ -35,15 +38,32 @@ shrinking the font, and the map pins grow to match. Hedged wording ("Iran
 says", "Tehran claims", "Pakistan says") is kept throughout: the judges
 credit it as an accuracy signal, and the anchor stories stay prominent.
 
+**Entry #3 v2 rationale.** The owner reviewed v1 and ordered a visual
+rebuild — same 25 stories, same words, stronger front page. Three fixes.
+First, presence: v1's three equal panels gave the day's biggest story the
+same weight as its neighbours, so the FAA ground stop now runs as a
+full-width hero splash and the other two leads become thumbnail panels.
+Second, the map: v1's pins covered only grid stories — the three leads had
+no pins at all, so the map's numbers looked irrelevant — and its sparse
+dot matrix read as a sketch. The v2 map is drawn from a finer 140x46 mask
+(resampled from v1's, then hand-shaped: a real Atlantic gap, a Hudson Bay
+notch, a Mediterranean channel, a full Africa) and carries thirteen pins,
+stories 1–3 included, every number matching the story number on the page.
+Third, energy: heavier black masthead rules, dark-red label chips and a
+deeper red for numbers and labels. The layout solver protects the grid's
+type first (16 px headlines, 13 px one-line summaries), then the hero
+photo (150 px), the panel photos (103 px) and the map (110 px) — all four
+floors hold at once.
+
 **How it is made.** The page is composed programmatically with PIL
 (`compose.py`) — every letter is rendered by code from DejaVu Serif/Sans,
 and the world map is drawn by the same script as a dot matrix over a
-hand-built continent mask, with big red pins at each grid story's dateline.
-The only non-code elements are the three panel photographs (generated
-images, committed under `assets/` and composited by the same script). The
-masthead, all three panel headlines and effectively every grid headline
-still read clearly at 300 px. `main.py` installs the committed `entry.png`
-into the output directory.
+hand-built continent mask, with big red pins at the datelines of the
+three leads and ten grid stories. The only non-code elements are the
+three photographs (generated images, committed under `assets/` and
+composited by the same script). The masthead, the hero headline, both
+panel headlines and the grid headlines still read clearly at 300 px.
+`main.py` installs the committed `entry.png` into the output directory.
 
 **Story selection.** The 25 stories were chosen for breadth across regions
 and fields, not just volume:
